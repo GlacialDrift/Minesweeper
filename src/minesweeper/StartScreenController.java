@@ -82,26 +82,17 @@ public class StartScreenController implements Initializable {
         bombs = (int) bombSlider.getValue();
         numBombs.setText(Integer.toString(bombs));
         
-        widthSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                width = (int) widthSlider.getValue();
-                gridWidth.setText(Integer.toString(width));
-            }
+        widthSlider.valueProperty().addListener((observableValue, number, t1) -> {
+            width = (int) widthSlider.getValue();
+            gridWidth.setText(Integer.toString(width));
         });
-        heightSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                height = (int) heightSlider.getValue();
-                gridHeight.setText(Integer.toString(height));
-            }
+        heightSlider.valueProperty().addListener((observableValue, number, t1) -> {
+            height = (int) heightSlider.getValue();
+            gridHeight.setText(Integer.toString(height));
         });
-        bombSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                bombs = (int) bombSlider.getValue();
-                numBombs.setText(Integer.toString(bombs));
-            }
+        bombSlider.valueProperty().addListener((observableValue, number, t1) -> {
+            bombs = (int) bombSlider.getValue();
+            numBombs.setText(Integer.toString(bombs));
         });
     }
 }

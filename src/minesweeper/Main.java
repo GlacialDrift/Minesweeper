@@ -24,38 +24,33 @@ import java.io.*;
 import java.util.Objects;
 
 public class Main extends Application implements Serializable {
-    
-    
-    private static int gamesPlayed;
-    private static int gamesWon;
-    private static float percentWon;
-    
-    
-    
-    private static Node createVSpacer() {
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-        return spacer;
-    }
-    
-    public static void main(String[] args) {
-        launch(args);
-    }
-    
-    @Override
-    public void start(Stage stage) throws Exception {
-        
-        Parent startRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("StartScreen.fxml")));
-        Scene startScene = new Scene(startRoot);
-        
-        stage.setScene(startScene);
-        stage.setTitle("Minesweeper");
-        InputStream FIS = new FileInputStream("Resources/Images/bomb.png");
-        ImageView bomb = new ImageView(new Image(FIS));
-        FIS.close();
-        stage.getIcons().add(bomb.getImage());
-        stage.show();
-    }
-    
-   
+	
+	private static int gamesPlayed;
+	private static int gamesWon;
+	private static float percentWon;
+	
+	private static Node createVSpacer() {
+		Region spacer = new Region();
+		VBox.setVgrow(spacer, Priority.ALWAYS);
+		return spacer;
+	}
+	
+	public static void main(String[] args) {
+		launch(args);
+	}
+	
+	@Override
+	public void start(Stage stage) throws Exception {
+		
+		Parent startRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("StartScreen.fxml")));
+		Scene startScene = new Scene(startRoot);
+		
+		stage.setScene(startScene);
+		stage.setTitle("Minesweeper");
+		InputStream FIS = new FileInputStream("Resources/Images/bomb.png");
+		ImageView bomb = new ImageView(new Image(FIS));
+		FIS.close();
+		stage.getIcons().add(bomb.getImage());
+		stage.show();
+	}
 }
