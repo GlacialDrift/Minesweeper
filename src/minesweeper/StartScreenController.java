@@ -1,13 +1,11 @@
 package minesweeper;
 
-import javafx.animation.AnimationTimer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -18,11 +16,7 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class TitlePage implements Initializable {
-    
-    private Stage stage;
-    private Parent root;
-    private Scene scene;
+public class StartScreenController implements Initializable {
     
     @FXML
     private Label gridWidth, gridHeight, numBombs;
@@ -39,16 +33,13 @@ public class TitlePage implements Initializable {
     private int width;
     private int height;
     private int bombs;
-    private long startTime;
     
     public void startGame(ActionEvent event) {
-        root = Main.buildGameScene(width, height, bombs);
-        stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        scene = new Scene(root);
+        GamePane game = new GamePane(width, height, bombs);
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        Scene scene = new Scene(game);
         stage.setScene(scene);
-        startTime = System.currentTimeMillis();
         stage.show();
-        
         
         System.out.println("game started");
     }
