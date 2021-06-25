@@ -30,7 +30,7 @@ public class GamePane extends AnchorPane{
 	private static GridPane grid;
 	private Font digital;
 	private Font numbers;
-	private ImageView bomb;
+	private Image bomb;
 	private ImageView bombRed;
 	private ImageView bombWrong;
 	private ImageView smile;
@@ -86,6 +86,7 @@ public class GamePane extends AnchorPane{
 		Button face = new Button();
 		face.setGraphic(smile);
 		
+		
 		Background boxes = new Background(new BackgroundFill(Color.rgb(25, 25, 25), null, null));
 		timer.setFont(digital);
 		timer.setTextFill(Color.RED);
@@ -128,10 +129,7 @@ public class GamePane extends AnchorPane{
 		FIS = new FileInputStream("Resources/Fonts/numbers.ttf");
 		numbers = Font.loadFont(FIS, 16);
 		FIS = new FileInputStream("Resources/Images/bomb.png");
-		bomb = new ImageView(new Image(FIS));
-		bomb.setFitHeight(25);
-		bomb.setFitWidth(25);
-		bomb.setSmooth(true);
+		bomb = new Image(FIS);
 		FIS = new FileInputStream("Resources/Images/bomb-exploded.png");
 		bombRed = new ImageView(new Image(FIS));
 		bombRed.setFitHeight(25);
@@ -181,20 +179,15 @@ public class GamePane extends AnchorPane{
 		
 		while (count < bombs && limit < 1000) {
 			selected = getNode(row, col, grid);
-			if((selected.getXpos() == t.getXpos() && selected.getYpos() == t.getYpos()) || selected.isBomb()) {
+			if(selected.equals(t) || selected.isBomb()) {
 				row = ThreadLocalRandom.current().nextInt(height);
 				col = ThreadLocalRandom.current().nextInt(width);
 			} else {
 				count++;
-				grid.getChildren().remove(selected);
 				selected.setBomb(true);
-				grid.add(selected, col, row);
+				selected.addImage(bomb);
 			}
 			limit++;
-			for(int i = 0; i < width * height; i++) {
-				Tile tempo = getNode(i % height, i / width, grid);
-				
-			}
 		}
 		
 		/*int count = 0;
@@ -242,8 +235,7 @@ public class GamePane extends AnchorPane{
 	 * @param source the source tile that is being clicked.
 	 */
 	private void leftClick(Object source){
-		if(source instanceof Tile) {
-			Tile t = (Tile) source;
+		if(source instanceof Tile t) {
 			System.out.println("Clicked at " + t.getXpos() + ", " + t.getYpos() + ": " + t.isBomb());
 		}
 	}
@@ -255,8 +247,7 @@ public class GamePane extends AnchorPane{
 	 * @param source the source tile that is being clicked
 	 */
 	private void rightClick(Object source){
-		if(source instanceof Tile) {
-			Tile t = (Tile) source;
+		if(source instanceof Tile t) {
 			System.out.println("Right clicked at " + t.getXpos() + ", " + t.getYpos());
 		}
 	}

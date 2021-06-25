@@ -1,5 +1,6 @@
 package minesweeper;
 
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -42,8 +43,12 @@ public class Tile extends StackPane{
 	 * Add an image to the tile. Since the tile is a StackPane, should add image directly to the top??
 	 * @param i image to be added
 	 */
-	public void addImage(ImageView i){
-		this.getChildren().add(i);
+	public void addImage(Image i){
+		ImageView imageView = new ImageView(i);
+		imageView.setFitHeight(25);
+		imageView.setFitWidth(25);
+		imageView.setSmooth(true);
+		this.getChildren().add(imageView);
 	}
 	
 	@Override
