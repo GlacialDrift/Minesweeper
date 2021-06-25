@@ -46,8 +46,6 @@ public class StartScreenController implements Initializable{
 		Scene scene = new Scene(game);
 		stage.setScene(scene);
 		stage.show();
-		
-		System.out.println("game started");
 	}
 	
 	/**

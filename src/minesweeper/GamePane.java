@@ -15,12 +15,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -73,8 +76,6 @@ public class GamePane extends AnchorPane{
 		scene.setRoot(game);
 		stage.setScene(scene);
 		stage.show();
-		
-		System.out.println("New game started");
 	};
 	
 	/**
@@ -95,7 +96,6 @@ public class GamePane extends AnchorPane{
 		this.width = width;
 		this.height = height;
 		this.bombs = bombs;
-		System.out.println(bombs);
 		grid = new GridPane();
 		
 		BorderPane game = new BorderPane();
@@ -124,6 +124,7 @@ public class GamePane extends AnchorPane{
 			for(int j = 0; j < height; j++) {
 				t = new Tile(i, j);
 				t.addEventFilter(MouseEvent.MOUSE_CLICKED, click);
+				t.addHiddenBox();
 				grid.add(t, i, j);
 			}
 		}
@@ -133,11 +134,6 @@ public class GamePane extends AnchorPane{
 		this.getChildren().add(game);
 	}
 	
-	// TODO fix the way the gridpane displays bombs once they are built
-	// TODO generate list of neighbors for each tile??
-	// TODO calculate number of neighbors that are bombs to set value
-	// TODO add label field of this value to the Tile
-	
 	/**
 	 * Load images and fonts to the object for future use during click events, etc.
 	 * @throws IOException Exception thrown in event of an issue during file loading
@@ -145,8 +141,6 @@ public class GamePane extends AnchorPane{
 	private void loadResources() throws IOException{
 		InputStream FIS = new FileInputStream("Resources/Fonts/DSEG7Modern-Bold.ttf");
 		digital = Font.loadFont(FIS, 24);
-		FIS = new FileInputStream("Resources/Fonts/numbers.ttf");
-		numbers = Font.loadFont(FIS, 16);
 		FIS = new FileInputStream("Resources/Images/bomb.png");
 		bomb = new Image(FIS);
 		FIS = new FileInputStream("Resources/Images/bomb-exploded.png");
@@ -208,23 +202,15 @@ public class GamePane extends AnchorPane{
 			}
 			limit++;
 		}
-		
-		/*int count = 0;
-		int row;
-		int col;
-		Tile temp;
-		while (count < bombs) {
-			row = ThreadLocalRandom.current().nextInt(height);
-			col = ThreadLocalRandom.current().nextInt(width);
-			temp = getNode(row, col, grid);
-			if (!temp.isBomb() && !temp.equals(t)) {
-				count++;
-				grid.getChildren().remove(temp);
-				temp.getChildren().add(bomb);
-				grid.add(temp, col, row);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				selected = getNode(j, i, grid);
+				selected.buildNeighbors(width, height);
+				selected.calculateNeighbors(this);
+				selected.addNeighborsText();
+				selected.getChildren().get(1).toFront();
 			}
-		}*/
-		System.out.println("Board Built");
+		}
 	}
 	
 	/**
@@ -234,7 +220,7 @@ public class GamePane extends AnchorPane{
 	 * @param grid the grid to search
 	 * @return the Tile at that position in that grid
 	 */
-	private Tile getNode(int row, int col, GridPane grid){
+	public Tile getNode(int row, int col, GridPane grid){
 		ObservableList<Node> children = grid.getChildren();
 		Tile result = null;
 		for(Node n : children) {
@@ -246,6 +232,8 @@ public class GamePane extends AnchorPane{
 		return result;
 	}
 	
+	// TODO fix showing adjacent tiles when the currently clicked tile has no bombs
+	
 	/**
 	 * Action to perform on a left-click. This will break out into ~3 methods:
 	 * 1. the tile clicked is hidden and not a bomb -> show
@@ -254,9 +242,25 @@ public class GamePane extends AnchorPane{
 	 * @param source the source tile that is being clicked.
 	 */
 	private void leftClick(Object source){
-		if(source instanceof Tile t) {
-			System.out.println("Clicked at " + t.getXpos() + ", " + t.getYpos() + ": " + t.isBomb());
+		
+		Tile t = (Tile) source;
+		//show the current tile
+		StackPane box = (StackPane) t.getChildren().get(t.getChildren().size() - 1);
+		t.getChildren().remove(box);
+		
+		//show adjacent neighbors if this tile = 0
+		if(t.getBombNeighbors() == 0) {
+			Tile temp;
+			ArrayList<Pair<Integer, Integer>> n = t.getNeighbors();
+			for(Pair<Integer, Integer> pair : n) {
+				temp = getNode(pair.getKey(), pair.getValue(), grid);
+				if(temp.getBombNeighbors() == 0 && temp.isHidden()) {
+					leftClick(temp);
+				}
+			}
 		}
+		
+		System.out.println("Left clicked at " + t.getXpos() + ", " + t.getYpos() + " bomb=" + t.isBomb());
 	}
 	
 	/**
@@ -267,7 +271,15 @@ public class GamePane extends AnchorPane{
 	 */
 	private void rightClick(Object source){
 		if(source instanceof Tile t) {
-			System.out.println("Right clicked at " + t.getXpos() + ", " + t.getYpos());
+		
 		}
+	}
+	
+	public GridPane getGrid(){
+		return grid;
+	}
+	
+	public void setGrid(GridPane grid){
+		GamePane.grid = grid;
 	}
 }
