@@ -1,46 +1,39 @@
 package minesweeper;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.io.*;
 import java.util.Objects;
 
-public class Main extends Application implements Serializable {
+/**
+ * Main class for entering the minesweeper game. This class should load in old saved stats data. On launch, the game loads into a pre-made scene defined in the StartScreen.fxml file. This is a file
+ * used to set up a new game and to display the total game stats. Upon setting selection, the start button will generate a new grid for a game and display that on the screen.
+ */
+public class Main extends Application implements Serializable{
 	
 	private static int gamesPlayed;
 	private static int gamesWon;
 	private static float percentWon;
 	
-	private static Node createVSpacer() {
-		Region spacer = new Region();
-		VBox.setVgrow(spacer, Priority.ALWAYS);
-		return spacer;
-	}
-	
-	public static void main(String[] args) {
+	public static void main(String[] args){
 		launch(args);
 	}
 	
+	/**
+	 * Load the starting screen and window. This should include loading stats from a saved file
+	 * @param stage stage passed into the start method by JavaFX
+	 * @throws Exception Throw an exception in the event that the game icon image cannot be loaded
+	 */
 	@Override
-	public void start(Stage stage) throws Exception {
+	public void start(Stage stage) throws Exception{
+		
+		// TODO implement stat saving and loading for display on the start screen
 		
 		Parent startRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("StartScreen.fxml")));
 		Scene startScene = new Scene(startRoot);

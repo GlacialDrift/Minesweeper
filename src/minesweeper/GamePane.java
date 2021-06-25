@@ -19,6 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * The GamePane class acts as the parent of everything on the game board. Therefore, extending the AnchorPane class will allow for everything to be added to this class for control
+ * Creation of a new GamePane object should initialize a new board, which contains a grid of tiles. The tiles are each essentially a StackPane for stacking images and text labels.
+ * Each tile will be given an eventFilter to listen for mouse clicks. If it is clicked, it performs various actions based on what type of click, whether its a bomb, if it hidden
+ * or shown, etc.
+ */
 public class GamePane extends AnchorPane{
 	
 	private static GridPane grid;
@@ -34,6 +40,31 @@ public class GamePane extends AnchorPane{
 	private int height;
 	private int bombs;
 	
+	/**
+	 * Anonymous EventHandler class that calls other methods on a tile mouse click. It passes in the source node of the event to modify the correct tile on the board
+	 */
+	EventHandler<MouseEvent> click = e -> {
+		if(!initialized) {
+			if(e.getButton() == MouseButton.PRIMARY) {
+				buildBoard(e.getSource());
+				leftClick(e.getSource());
+			}
+		} else {
+			if(e.getButton() == MouseButton.PRIMARY) {
+				leftClick(e.getSource());
+			} else if(e.getButton() == MouseButton.SECONDARY) {
+				rightClick(e.getSource());
+			}
+		}
+	};
+	
+	/**
+	 * Constructor for the game board. It creates a timer, bomb counter, face button (to start a new game), and the board itself. The board is defined by the tile width, the tile height
+	 * and the number of bombs that are on the board
+	 * @param width  the width, in tiles, of the game board
+	 * @param height the height, in tiles, of the game board
+	 * @param bombs  the number of hidden bombs to be included on the game board
+	 */
 	public GamePane(int width, int height, int bombs){
 		
 		initialized = false;
@@ -68,21 +99,6 @@ public class GamePane extends AnchorPane{
 		titleBar.setAlignment(Pos.CENTER);
 		game.setTop(titleBar);
 		
-		EventHandler<MouseEvent> click = e -> {
-			if(!initialized) {
-				if(e.getButton() == MouseButton.PRIMARY) {
-					buildBoard(e.getSource());
-					leftClick(e.getSource());
-				}
-			} else {
-				if(e.getButton() == MouseButton.PRIMARY) {
-					leftClick(e.getSource());
-				} else if(e.getButton() == MouseButton.SECONDARY) {
-					rightClick(e.getSource());
-				}
-			}
-		};
-		
 		Tile t;
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -102,6 +118,56 @@ public class GamePane extends AnchorPane{
 	// TODO calculate number of neighbors that are bombs to set value
 	// TODO add label field of this value to the Tile
 	
+	/**
+	 * Load images and fonts to the object for future use during click events, etc.
+	 * @throws IOException Exception thrown in event of an issue during file loading
+	 */
+	private void loadResources() throws IOException{
+		InputStream FIS = new FileInputStream("Resources/Fonts/DSEG7Modern-Bold.ttf");
+		digital = Font.loadFont(FIS, 24);
+		FIS = new FileInputStream("Resources/Fonts/numbers.ttf");
+		numbers = Font.loadFont(FIS, 16);
+		FIS = new FileInputStream("Resources/Images/bomb.png");
+		bomb = new ImageView(new Image(FIS));
+		bomb.setFitHeight(25);
+		bomb.setFitWidth(25);
+		bomb.setSmooth(true);
+		FIS = new FileInputStream("Resources/Images/bomb-exploded.png");
+		bombRed = new ImageView(new Image(FIS));
+		bombRed.setFitHeight(25);
+		bombRed.setFitWidth(25);
+		bombRed.setSmooth(true);
+		FIS = new FileInputStream("Resources/Images/bomb-wrong.png");
+		bombWrong = new ImageView(new Image(FIS));
+		bombWrong.setFitHeight(25);
+		bombWrong.setFitWidth(25);
+		bombWrong.setSmooth(true);
+		FIS = new FileInputStream("Resources/Images/minesweeper-smile.png");
+		smile = new ImageView(new Image(FIS));
+		smile.setPreserveRatio(true);
+		smile.setFitHeight(30);
+		smile.setSmooth(true);
+		FIS.close();
+	}
+	
+	/**
+	 * Creates a "spacer" node that fills space within an HBox and a VBox
+	 * @return Spacer object for HBox and VBox
+	 */
+	private Node createHSpacer(){
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		VBox.setVgrow(spacer, Priority.ALWAYS);
+		return spacer;
+	}
+	
+	/**
+	 * Function that builds the game board, i.e. it fills the board with the correct number of bombs in a random location. It should also add the bomb image to each bomb=true tile so that when
+	 * rectangles or other "hiding" objects are removed on clicking, it shows an actual bomb. Also useful for testing that the board is built correctly. After adding bombs, calculate adjacent
+	 * bomb counts for each tile and display those values. This is where showing bomb images can be useful in debugging. Boards in minecraft are only built after the first click. This allows
+	 * us to prevent the first clicked tile from being a bomb. Therefore, feed this source tile into the method and ensure the source tile is not set to a bomb.
+	 * @param source the source node that cannot be a bomb
+	 */
 	private void buildBoard(Object source){
 		initialized = true;
 		Tile t = (Tile) source;
@@ -149,6 +215,13 @@ public class GamePane extends AnchorPane{
 		System.out.println("Board Built");
 	}
 	
+	/**
+	 * Fetch and return the Tile at row-r and col-c in the grid
+	 * @param row  row to retrieve
+	 * @param col  column to retrieve
+	 * @param grid the grid to search
+	 * @return the Tile at that position in that grid
+	 */
 	private Tile getNode(int row, int col, GridPane grid){
 		ObservableList<Node> children = grid.getChildren();
 		Tile result = null;
@@ -161,6 +234,13 @@ public class GamePane extends AnchorPane{
 		return result;
 	}
 	
+	/**
+	 * Action to perform on a left-click. This will break out into ~3 methods:
+	 * 1. the tile clicked is hidden and not a bomb -> show
+	 * 2. the tile clicked is hidden and is a bomb -> game over
+	 * 3. the tile clicked is not hidden -> if # of flags is correct, show all adjacent tiles
+	 * @param source the source tile that is being clicked.
+	 */
 	private void leftClick(Object source){
 		if(source instanceof Tile) {
 			Tile t = (Tile) source;
@@ -168,44 +248,16 @@ public class GamePane extends AnchorPane{
 		}
 	}
 	
+	/**
+	 * Action to perform on a right click:
+	 * if hidden:
+	 * toggle the flag on that tile
+	 * @param source the source tile that is being clicked
+	 */
 	private void rightClick(Object source){
 		if(source instanceof Tile) {
 			Tile t = (Tile) source;
 			System.out.println("Right clicked at " + t.getXpos() + ", " + t.getYpos());
 		}
-	}
-	
-	private void loadResources() throws IOException{
-		InputStream FIS = new FileInputStream("Resources/Fonts/DSEG7Modern-Bold.ttf");
-		digital = Font.loadFont(FIS, 24);
-		FIS = new FileInputStream("Resources/Fonts/numbers.ttf");
-		numbers = Font.loadFont(FIS, 16);
-		FIS = new FileInputStream("Resources/Images/bomb.png");
-		bomb = new ImageView(new Image(FIS));
-		bomb.setFitHeight(25);
-		bomb.setFitWidth(25);
-		bomb.setSmooth(true);
-		FIS = new FileInputStream("Resources/Images/bomb-exploded.png");
-		bombRed = new ImageView(new Image(FIS));
-		bombRed.setFitHeight(25);
-		bombRed.setFitWidth(25);
-		bombRed.setSmooth(true);
-		FIS = new FileInputStream("Resources/Images/bomb-wrong.png");
-		bombWrong = new ImageView(new Image(FIS));
-		bombWrong.setFitHeight(25);
-		bombWrong.setFitWidth(25);
-		bombWrong.setSmooth(true);
-		FIS = new FileInputStream("Resources/Images/minesweeper-smile.png");
-		smile = new ImageView(new Image(FIS));
-		smile.setPreserveRatio(true);
-		smile.setFitHeight(30);
-		smile.setSmooth(true);
-		FIS.close();
-	}
-	
-	private Node createHSpacer(){
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-		return spacer;
 	}
 }
