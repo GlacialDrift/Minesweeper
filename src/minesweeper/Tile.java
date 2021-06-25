@@ -28,8 +28,8 @@ public class Tile extends StackPane {
 		bombNeighbors = 0;
 	}
 	
-	public void addImage(ImageView bomb) {
-		this.getChildren().add(bomb);
+	public void addImage(ImageView i) {
+		this.getChildren().add(i);
 	}
 	
 	@Override

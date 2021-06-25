@@ -19,27 +19,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class GamePane extends AnchorPane {
+public class GamePane extends AnchorPane{
 	
+	private static GridPane grid;
 	private Font digital;
 	private Font numbers;
 	private ImageView bomb;
 	private ImageView bombRed;
 	private ImageView bombWrong;
 	private ImageView smile;
-	private static GridPane grid;
 	private boolean initialized;
 	
 	private int width;
 	private int height;
 	private int bombs;
 	
-	public GamePane(int width, int height, int bombs) {
+	public GamePane(int width, int height, int bombs){
 		
 		initialized = false;
 		try {
 			loadResources();
-		} catch (Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		this.width = width;
@@ -69,23 +69,23 @@ public class GamePane extends AnchorPane {
 		game.setTop(titleBar);
 		
 		EventHandler<MouseEvent> click = e -> {
-			if (!initialized) {
-				if (e.getButton() == MouseButton.PRIMARY) {
+			if(!initialized) {
+				if(e.getButton() == MouseButton.PRIMARY) {
 					buildBoard(e.getSource());
 					leftClick(e.getSource());
 				}
 			} else {
-				if (e.getButton() == MouseButton.PRIMARY) {
+				if(e.getButton() == MouseButton.PRIMARY) {
 					leftClick(e.getSource());
-				} else if (e.getButton() == MouseButton.SECONDARY) {
+				} else if(e.getButton() == MouseButton.SECONDARY) {
 					rightClick(e.getSource());
 				}
 			}
 		};
 		
 		Tile t;
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
 				t = new Tile(i, j);
 				t.addEventFilter(MouseEvent.MOUSE_CLICKED, click);
 				grid.add(t, i, j);
@@ -102,10 +102,36 @@ public class GamePane extends AnchorPane {
 	// TODO calculate number of neighbors that are bombs to set value
 	// TODO add label field of this value to the Tile
 	
-	private void buildBoard(Object source) {
+	private void buildBoard(Object source){
 		initialized = true;
 		Tile t = (Tile) source;
+		
+		int row = ThreadLocalRandom.current().nextInt(height);
+		int col = ThreadLocalRandom.current().nextInt(width);
+		Tile selected;
+		
 		int count = 0;
+		int limit = 0;
+		
+		while (count < bombs && limit < 1000) {
+			selected = getNode(row, col, grid);
+			if((selected.getXpos() == t.getXpos() && selected.getYpos() == t.getYpos()) || selected.isBomb()) {
+				row = ThreadLocalRandom.current().nextInt(height);
+				col = ThreadLocalRandom.current().nextInt(width);
+			} else {
+				count++;
+				grid.getChildren().remove(selected);
+				selected.setBomb(true);
+				grid.add(selected, col, row);
+			}
+			limit++;
+			for(int i = 0; i < width * height; i++) {
+				Tile tempo = getNode(i % height, i / width, grid);
+				
+			}
+		}
+		
+		/*int count = 0;
 		int row;
 		int col;
 		Tile temp;
@@ -116,18 +142,18 @@ public class GamePane extends AnchorPane {
 			if (!temp.isBomb() && !temp.equals(t)) {
 				count++;
 				grid.getChildren().remove(temp);
-				temp.addImage(bomb);
+				temp.getChildren().add(bomb);
 				grid.add(temp, col, row);
 			}
-		}
+		}*/
 		System.out.println("Board Built");
 	}
 	
-	private Tile getNode(int row, int col, GridPane grid) {
+	private Tile getNode(int row, int col, GridPane grid){
 		ObservableList<Node> children = grid.getChildren();
 		Tile result = null;
-		for (Node n : children) {
-			if (grid.getRowIndex(n) == row && grid.getColumnIndex(n) == col) {
+		for(Node n : children) {
+			if(GridPane.getRowIndex(n) == row && GridPane.getColumnIndex(n) == col) {
 				result = (Tile) n;
 				break;
 			}
@@ -135,21 +161,21 @@ public class GamePane extends AnchorPane {
 		return result;
 	}
 	
-	private void leftClick(Object source) {
-		if (source instanceof Tile) {
+	private void leftClick(Object source){
+		if(source instanceof Tile) {
 			Tile t = (Tile) source;
-			System.out.println("Clicked at " + grid.getChildren().indexOf(t) + " " + t.isBomb());
+			System.out.println("Clicked at " + t.getXpos() + ", " + t.getYpos() + ": " + t.isBomb());
 		}
 	}
 	
-	private void rightClick(Object source) {
-		if (source instanceof Tile) {
+	private void rightClick(Object source){
+		if(source instanceof Tile) {
 			Tile t = (Tile) source;
-			System.out.println("Right clicked at " + grid.getChildren().indexOf(t));
+			System.out.println("Right clicked at " + t.getXpos() + ", " + t.getYpos());
 		}
 	}
 	
-	private void loadResources() throws IOException {
+	private void loadResources() throws IOException{
 		InputStream FIS = new FileInputStream("Resources/Fonts/DSEG7Modern-Bold.ttf");
 		digital = Font.loadFont(FIS, 24);
 		FIS = new FileInputStream("Resources/Fonts/numbers.ttf");
@@ -177,7 +203,7 @@ public class GamePane extends AnchorPane {
 		FIS.close();
 	}
 	
-	private Node createHSpacer() {
+	private Node createHSpacer(){
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 		return spacer;
