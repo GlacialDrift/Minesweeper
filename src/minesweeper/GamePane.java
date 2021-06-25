@@ -1,9 +1,11 @@
 package minesweeper;
 
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -13,7 +15,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
+import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +63,21 @@ public class GamePane extends AnchorPane{
 	};
 	
 	/**
+	 * Anonymous EventHandler that creates a new game, and sets it to the main scene of the stage. Perform these actions such that no new scenes or stages are created;
+	 */
+	EventHandler<ActionEvent> newGame = e -> {
+		
+		GamePane game = new GamePane(width, height, bombs);
+		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+		Scene scene = ((Node) e.getSource()).getScene();
+		scene.setRoot(game);
+		stage.setScene(scene);
+		stage.show();
+		
+		System.out.println("New game started");
+	};
+	
+	/**
 	 * Constructor for the game board. It creates a timer, bomb counter, face button (to start a new game), and the board itself. The board is defined by the tile width, the tile height
 	 * and the number of bombs that are on the board
 	 * @param width  the width, in tiles, of the game board
@@ -85,7 +104,7 @@ public class GamePane extends AnchorPane{
 		Label timer = new Label("000");
 		Button face = new Button();
 		face.setGraphic(smile);
-		
+		face.setOnAction(newGame);
 		
 		Background boxes = new Background(new BackgroundFill(Color.rgb(25, 25, 25), null, null));
 		timer.setFont(digital);
