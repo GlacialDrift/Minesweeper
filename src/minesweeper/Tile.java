@@ -163,8 +163,8 @@ public class Tile extends StackPane{
 		bottomTriangle.setFill(Color.web("808080"));
 		Rectangle r = new Rectangle(21, 21);
 		r.setFill(Color.web("C0C0C0"));
-		r.setX(1);
-		r.setY(1);
+		r.setX(2);
+		r.setY(2);
 		hidden.getChildren().addAll(topTriangle, bottomTriangle, r);
 		this.getChildren().add(hidden);
 		

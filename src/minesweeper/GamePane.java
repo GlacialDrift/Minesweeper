@@ -36,7 +36,6 @@ public class GamePane extends AnchorPane{
 	
 	private static GridPane grid;
 	private Font digital;
-	private Font numbers;
 	private Image bomb;
 	private ImageView bombRed;
 	private ImageView bombWrong;
@@ -232,8 +231,6 @@ public class GamePane extends AnchorPane{
 		return result;
 	}
 	
-	// TODO fix showing adjacent tiles when the currently clicked tile has no bombs
-	
 	/**
 	 * Action to perform on a left-click. This will break out into ~3 methods:
 	 * 1. the tile clicked is hidden and not a bomb -> show
@@ -244,17 +241,18 @@ public class GamePane extends AnchorPane{
 	private void leftClick(Object source){
 		
 		Tile t = (Tile) source;
+		t.setHidden(false);
 		//show the current tile
 		StackPane box = (StackPane) t.getChildren().get(t.getChildren().size() - 1);
 		t.getChildren().remove(box);
 		
+		Tile temp;
 		//show adjacent neighbors if this tile = 0
 		if(t.getBombNeighbors() == 0) {
-			Tile temp;
 			ArrayList<Pair<Integer, Integer>> n = t.getNeighbors();
 			for(Pair<Integer, Integer> pair : n) {
-				temp = getNode(pair.getKey(), pair.getValue(), grid);
-				if(temp.getBombNeighbors() == 0 && temp.isHidden()) {
+				temp = getNode(pair.getValue(), pair.getKey(), grid);
+				if(temp.isHidden()) {
 					leftClick(temp);
 				}
 			}
