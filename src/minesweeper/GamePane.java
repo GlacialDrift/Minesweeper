@@ -40,26 +40,42 @@ public class GamePane extends AnchorPane{
 	private ImageView bombRed;
 	private ImageView bombWrong;
 	private ImageView smile;
+	private ImageView dead;
+	private ImageView glasses;
+	private ImageView open;
+	private Image flag;
 	private boolean initialized;
+	private boolean gameOver;
+	private int sessionWins;
+	private int sessionPlays;
+	private final int empties;
+	private int revealed;
+	
+	private final Label bombCount;
+	private final Label timer;
+	private final Button face;
 	
 	private int width;
 	private int height;
 	private int bombs;
+	private int flagged;
 	
 	/**
 	 * Anonymous EventHandler class that calls other methods on a tile mouse click. It passes in the source node of the event to modify the correct tile on the board
 	 */
 	EventHandler<MouseEvent> click = e -> {
-		if(!initialized) {
-			if(e.getButton() == MouseButton.PRIMARY) {
-				buildBoard(e.getSource());
-				leftClick(e.getSource());
-			}
-		} else {
-			if(e.getButton() == MouseButton.PRIMARY) {
-				leftClick(e.getSource());
-			} else if(e.getButton() == MouseButton.SECONDARY) {
-				rightClick(e.getSource());
+		if(!gameOver){
+			if(!initialized) {
+				if(e.getButton() == MouseButton.PRIMARY) {
+					buildBoard(e.getSource());
+					leftClick(e.getSource());
+				}
+			} else {
+				if(e.getButton() == MouseButton.PRIMARY) {
+					leftClick(e.getSource());
+				} else if(e.getButton() == MouseButton.SECONDARY) {
+					rightClick(e.getSource());
+				}
 			}
 		}
 	};
@@ -69,7 +85,7 @@ public class GamePane extends AnchorPane{
 	 */
 	EventHandler<ActionEvent> newGame = e -> {
 		
-		GamePane game = new GamePane(width, height, bombs);
+		GamePane game = new GamePane(width, height, bombs, sessionPlays + 1, sessionWins);
 		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
 		Scene scene = ((Node) e.getSource()).getScene();
 		scene.setRoot(game);
@@ -84,7 +100,7 @@ public class GamePane extends AnchorPane{
 	 * @param height the height, in tiles, of the game board
 	 * @param bombs  the number of hidden bombs to be included on the game board
 	 */
-	public GamePane(int width, int height, int bombs){
+	public GamePane(int width, int height, int bombs, int plays, int wins){
 		
 		initialized = false;
 		try {
@@ -95,13 +111,19 @@ public class GamePane extends AnchorPane{
 		this.width = width;
 		this.height = height;
 		this.bombs = bombs;
+		this.flagged = 0;
+		this.sessionPlays = plays;
+		this.sessionWins = wins;
+		this.empties = width*height - bombs;
+		this.revealed = 0;
+		gameOver = false;
 		grid = new GridPane();
 		
 		BorderPane game = new BorderPane();
 		game.setBackground(new Background(new BackgroundFill(Color.LIGHTGREY, null, null)));
-		Label bombCount = new Label(Integer.toString(bombs));
-		Label timer = new Label("000");
-		Button face = new Button();
+		bombCount = new Label(Integer.toString(bombs));
+		timer = new Label("000");
+		face = new Button();
 		face.setGraphic(smile);
 		face.setOnAction(newGame);
 		
@@ -140,23 +162,48 @@ public class GamePane extends AnchorPane{
 	private void loadResources() throws IOException{
 		InputStream FIS = new FileInputStream("Resources/Fonts/DSEG7Modern-Bold.ttf");
 		digital = Font.loadFont(FIS, 24);
+		
 		FIS = new FileInputStream("Resources/Images/bomb.png");
 		bomb = new Image(FIS);
+		
 		FIS = new FileInputStream("Resources/Images/bomb-exploded.png");
 		bombRed = new ImageView(new Image(FIS));
 		bombRed.setFitHeight(25);
 		bombRed.setFitWidth(25);
 		bombRed.setSmooth(true);
+		
 		FIS = new FileInputStream("Resources/Images/bomb-wrong.png");
 		bombWrong = new ImageView(new Image(FIS));
 		bombWrong.setFitHeight(25);
 		bombWrong.setFitWidth(25);
 		bombWrong.setSmooth(true);
+		
 		FIS = new FileInputStream("Resources/Images/minesweeper-smile.png");
 		smile = new ImageView(new Image(FIS));
 		smile.setPreserveRatio(true);
 		smile.setFitHeight(30);
 		smile.setSmooth(true);
+		
+		FIS = new FileInputStream("Resources/Images/dead.png");
+		dead = new ImageView(new Image(FIS));
+		dead.setPreserveRatio(true);
+		dead.setFitHeight(30);
+		dead.setSmooth(true);
+		
+		FIS = new FileInputStream("Resources/Images/glasses.png");
+		glasses = new ImageView(new Image(FIS));
+		glasses.setPreserveRatio(true);
+		glasses.setFitHeight(30);
+		glasses.setSmooth(true);
+		
+		FIS = new FileInputStream("Resources/Images/open.png");
+		open = new ImageView(new Image(FIS));
+		open.setPreserveRatio(true);
+		open.setFitHeight(30);
+		open.setSmooth(true);
+		
+		FIS = new FileInputStream("Resources/Images/flag.png");
+		flag = new Image(FIS);
 		FIS.close();
 	}
 	
@@ -232,19 +279,42 @@ public class GamePane extends AnchorPane{
 	}
 	
 	/**
+	 * Handle the two cases of left clicking a tile. If the tile is hidden, do the standard left click logic.
+	 * However, if the tile is already revealed, instead run the shortcut revealing logic.
+	 * @param source the source object of the action
+	 */
+	private void leftClick(Object source){
+		Tile t = (Tile) source;
+		if(t.isFlagged()) return;
+		
+		if(t.isHidden()) {
+			leftClickHidden(source);
+		} else {
+			leftClickRevealed(source);
+		}
+		
+	}
+	
+	/**
 	 * Action to perform on a left-click. This will break out into ~3 methods:
 	 * 1. the tile clicked is hidden and not a bomb -> show
 	 * 2. the tile clicked is hidden and is a bomb -> game over
 	 * 3. the tile clicked is not hidden -> if # of flags is correct, show all adjacent tiles
 	 * @param source the source tile that is being clicked.
 	 */
-	private void leftClick(Object source){
+	private void leftClickHidden(Object source){
 		
 		Tile t = (Tile) source;
+		
+		if(t.isBomb()) {
+			endGame(source);
+			return;
+		}
+		
 		t.setHidden(false);
+		revealed++;
 		//show the current tile
-		StackPane box = (StackPane) t.getChildren().get(t.getChildren().size() - 1);
-		t.getChildren().remove(box);
+		t.getChildren().remove(t.getChildren().size()-1);
 		
 		Tile temp;
 		//show adjacent neighbors if this tile = 0
@@ -258,7 +328,36 @@ public class GamePane extends AnchorPane{
 			}
 		}
 		
-		System.out.println("Left clicked at " + t.getXpos() + ", " + t.getYpos() + " bomb=" + t.isBomb());
+		if(revealed == empties){
+			gameWon();
+		}
+	}
+	
+	/**
+	 * Compare the number of flagged neighbors to this bomb's neighbor bomb count. If they match,
+	 * reveal all neighbors, otherwise do nothing
+	 * @param source the source of the mouse click event.
+	 */
+	private void leftClickRevealed(Object source){
+		Tile t = (Tile) source;
+		ArrayList<Pair<Integer, Integer>> n = t.getNeighbors();
+		int count = 0;
+		Tile temp;
+		for(Pair<Integer, Integer> p : n) {
+			temp = getNode(p.getValue(), p.getKey(), grid);
+			if(temp.isFlagged()) {
+				count++;
+			}
+		}
+		
+		if(count == t.getBombNeighbors()) {
+			for(Pair<Integer, Integer> p : n) {
+				temp = getNode(p.getValue(), p.getKey(), grid);
+				if(temp.isHidden() && !temp.isFlagged()) {
+					leftClickHidden(temp);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -268,8 +367,69 @@ public class GamePane extends AnchorPane{
 	 * @param source the source tile that is being clicked
 	 */
 	private void rightClick(Object source){
-		if(source instanceof Tile t) {
+		Tile t = (Tile) source;
+		if(t.isFlagged()) {
+			ImageView f = (ImageView) t.getChildren().get(t.getChildren().size() - 1);
+			t.getChildren().remove(f);
+			t.setFlagged(false);
+			flagged--;
+		} else {
+			t.addImage(flag);
+			t.setFlagged(true);
+			flagged++;
+		}
+		bombCount.setText("" + (bombs - flagged));
+	}
+	
+	private void endGame(Object source){
+		gameOver = true;
+		face.setGraphic(dead);
 		
+		Tile t = (Tile) source;
+		StackPane sp = (StackPane) t.getChildren().get(t.getChildren().size() - 1);
+		t.getChildren().remove(sp);
+		t.getChildren().add(bombRed);
+		
+		Tile temp;
+		for(int i=0;i<width;i++){
+			for (int j=0;j<height;j++){
+				temp = getNode(i, j, grid);
+				if(temp.equals(t)){
+				
+				}else{
+					if(temp.isFlagged()){
+						if(!temp.isBomb()){
+							wrongBomb(i, j);
+						}
+					}else if(temp.isHidden()){
+						temp.getChildren().remove(temp.getChildren().size()-1);
+					}
+				}
+			}
+		}
+	}
+	
+	private void wrongBomb(int row, int col){
+		Tile t = getNode(row, col, grid);
+		t.getChildren().remove(t.getChildren().size()-1);
+		t.getChildren().remove(t.getChildren().size()-1);
+		t.getChildren().add(bombWrong);
+	}
+	
+	private void gameWon(){
+		sessionWins++;
+		gameOver = true;
+		face.setGraphic(glasses);
+		bombCount.setText("0");
+		
+		Tile t;
+		for(int i=0;i<width;i++){
+			for(int j=0;j<height;j++){
+				t = getNode(i,j,grid);
+				if(t.isHidden() && t.isBomb()){
+					t.addImage(flag);
+				}
+			}
 		}
 	}
 	

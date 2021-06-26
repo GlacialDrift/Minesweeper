@@ -73,7 +73,7 @@ public class Tile extends StackPane{
 			x = xpos + i;
 			for(int j = -1; j < 2; j++) {
 				y = ypos + j;
-				if(!(x < 0 || y < 0 || x >= width || y >= height || (x == 0 && y == 0))) {
+				if(!(x < 0 || y < 0 || x >= width || y >= height || (x == xpos && y == ypos))) {
 					p = new Pair<>(x, y);
 					neighbors.add(p);
 				}

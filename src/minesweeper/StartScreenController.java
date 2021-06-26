@@ -41,7 +41,7 @@ public class StartScreenController implements Initializable{
 	 * @param event button click event
 	 */
 	public void startGame(ActionEvent event){
-		GamePane game = new GamePane(width, height, bombs);
+		GamePane game = new GamePane(width, height, bombs,0,0);
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		Scene scene = new Scene(game);
 		stage.setScene(scene);
