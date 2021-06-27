@@ -84,13 +84,7 @@ public class GamePane extends AnchorPane{
 	 * Anonymous EventHandler that creates a new game, and sets it to the main scene of the stage. Perform these actions such that no new scenes or stages are created;
 	 */
 	EventHandler<ActionEvent> newGame = e -> {
-		
-		GamePane game = new GamePane(width, height, bombs, sessionPlays + 1, sessionWins);
-		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-		Scene scene = ((Node) e.getSource()).getScene();
-		scene.setRoot(game);
-		stage.setScene(scene);
-		stage.show();
+	
 	};
 	
 	/**
