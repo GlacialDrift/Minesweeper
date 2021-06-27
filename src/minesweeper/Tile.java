@@ -120,30 +120,14 @@ public class Tile extends StackPane{
 		label.setAlignment(Pos.CENTER);
 		label.setFont(Font.font("Courier New", FontWeight.EXTRA_BOLD, 20));
 		switch(bombNeighbors) {
-			case 1 -> {
-				label.setTextFill(Color.web("0100FE"));
-			}
-			case 2 -> {
-				label.setTextFill(Color.web("008000"));
-			}
-			case 3 -> {
-				label.setTextFill(Color.web("FE0000"));
-			}
-			case 4 -> {
-				label.setTextFill(Color.web("010080"));
-			}
-			case 5 -> {
-				label.setTextFill(Color.web("810102"));
-			}
-			case 6 -> {
-				label.setTextFill(Color.web("008081"));
-			}
-			case 7 -> {
-				label.setTextFill(Color.BLACK);
-			}
-			case 8 -> {
-				label.setTextFill(Color.web("808080"));
-			}
+			case 1 -> label.setTextFill(Color.web("0100FE"));
+			case 2 -> label.setTextFill(Color.web("008000"));
+			case 3 -> label.setTextFill(Color.web("FE0000"));
+			case 4 -> label.setTextFill(Color.web("010080"));
+			case 5 -> label.setTextFill(Color.web("810102"));
+			case 6 -> label.setTextFill(Color.web("008081"));
+			case 7 -> label.setTextFill(Color.BLACK);
+			case 8 -> label.setTextFill(Color.web("808080"));
 			case 0 -> {
 				label.setTextFill(Color.DARKGREEN);
 				label.setText("");
@@ -210,17 +194,5 @@ public class Tile extends StackPane{
 	
 	public int getBombNeighbors(){
 		return bombNeighbors;
-	}
-	
-	public void setBombNeighbors(int bombNeighbors){
-		this.bombNeighbors = bombNeighbors;
-	}
-	
-	public int getXpos(){
-		return xpos;
-	}
-	
-	public int getYpos(){
-		return ypos;
 	}
 }

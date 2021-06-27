@@ -33,7 +33,12 @@ public class Main extends Application implements Serializable{
 	@Override
 	public void start(Stage stage) throws Exception{
 		
-		// TODO implement stat saving and loading for display on the start screen
+		/* TODO
+		    implement stat saving and loading for display on the start screen
+		    Add menu bar to the game board scene to allow to return to splash screen
+		    implement updates for total games played, number of games won, high scores, etc.
+		    re-factor the new-game button to reset the current board rather than creating a new one
+		*/
 		
 		Parent startRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("StartScreen.fxml")));
 		Scene startScene = new Scene(startRoot);

@@ -1,5 +1,6 @@
 package minesweeper;
 
+import javafx.animation.AnimationTimer;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,11 +16,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
-import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +34,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class GamePane extends AnchorPane{
 	
 	private static GridPane grid;
+	private final int empties;
+	private final Label bombCount;
+	private final Label timer;
+	private final Button face;
+	private final long startTime;
 	private Font digital;
 	private Image bomb;
 	private ImageView bombRed;
@@ -42,19 +46,14 @@ public class GamePane extends AnchorPane{
 	private ImageView smile;
 	private ImageView dead;
 	private ImageView glasses;
-	private ImageView open;
+	// private ImageView open;
 	private Image flag;
 	private boolean initialized;
 	private boolean gameOver;
 	private int sessionWins;
 	private int sessionPlays;
-	private final int empties;
 	private int revealed;
-	
-	private final Label bombCount;
-	private final Label timer;
-	private final Button face;
-	
+	private AnimationTimer animationTimer;
 	private int width;
 	private int height;
 	private int bombs;
@@ -64,10 +63,11 @@ public class GamePane extends AnchorPane{
 	 * Anonymous EventHandler class that calls other methods on a tile mouse click. It passes in the source node of the event to modify the correct tile on the board
 	 */
 	EventHandler<MouseEvent> click = e -> {
-		if(!gameOver){
+		if(!gameOver) {
 			if(!initialized) {
 				if(e.getButton() == MouseButton.PRIMARY) {
 					buildBoard(e.getSource());
+					animationTimer.start();
 					leftClick(e.getSource());
 				}
 			} else {
@@ -102,6 +102,7 @@ public class GamePane extends AnchorPane{
 	 */
 	public GamePane(int width, int height, int bombs, int plays, int wins){
 		
+		// initialize actual properties
 		initialized = false;
 		try {
 			loadResources();
@@ -114,19 +115,31 @@ public class GamePane extends AnchorPane{
 		this.flagged = 0;
 		this.sessionPlays = plays;
 		this.sessionWins = wins;
-		this.empties = width*height - bombs;
+		this.empties = width * height - bombs;
 		this.revealed = 0;
+		this.startTime = System.currentTimeMillis();
+		animationTimer = new AnimationTimer(){
+			@Override
+			public void handle(long now){
+				long elapsed = System.currentTimeMillis() - startTime;
+				elapsed /= 1000;
+				if(elapsed > 999) elapsed = 999;
+				timer.setText(addPadding((int) elapsed, 3));
+			}
+		};
 		gameOver = false;
-		grid = new GridPane();
 		
+		// create the top bar
+		grid = new GridPane();
 		BorderPane game = new BorderPane();
 		game.setBackground(new Background(new BackgroundFill(Color.LIGHTGREY, null, null)));
-		bombCount = new Label(Integer.toString(bombs));
+		bombCount = new Label(addPadding(bombs, 3));
 		timer = new Label("000");
 		face = new Button();
 		face.setGraphic(smile);
 		face.setOnAction(newGame);
 		
+		// format the top bar
 		Background boxes = new Background(new BackgroundFill(Color.rgb(25, 25, 25), null, null));
 		timer.setFont(digital);
 		timer.setTextFill(Color.RED);
@@ -140,6 +153,7 @@ public class GamePane extends AnchorPane{
 		titleBar.setAlignment(Pos.CENTER);
 		game.setTop(titleBar);
 		
+		// create all of the tiles, add event filters, and add HiddenBoxes
 		Tile t;
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -151,7 +165,6 @@ public class GamePane extends AnchorPane{
 		}
 		grid.setAlignment(Pos.CENTER);
 		game.setCenter(grid);
-		
 		this.getChildren().add(game);
 	}
 	
@@ -196,11 +209,11 @@ public class GamePane extends AnchorPane{
 		glasses.setFitHeight(30);
 		glasses.setSmooth(true);
 		
-		FIS = new FileInputStream("Resources/Images/open.png");
+		/*FIS = new FileInputStream("Resources/Images/open.png");
 		open = new ImageView(new Image(FIS));
 		open.setPreserveRatio(true);
 		open.setFitHeight(30);
-		open.setSmooth(true);
+		open.setSmooth(true);*/
 		
 		FIS = new FileInputStream("Resources/Images/flag.png");
 		flag = new Image(FIS);
@@ -216,6 +229,28 @@ public class GamePane extends AnchorPane{
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 		VBox.setVgrow(spacer, Priority.ALWAYS);
 		return spacer;
+	}
+	
+	/**
+	 * Small helper method to ensure the bomb counter and timer at the top of the screen are always 3 digits long
+	 * @param value  the value to be displayed
+	 * @param length the desired number of digits
+	 * @return return a string of the desired value and the desired digits
+	 */
+	private String addPadding(int value, int length){
+		StringBuilder sb = new StringBuilder();
+		
+		int temp = value;
+		int count = 0;
+		while (Math.abs(temp) > 0) {
+			count++;
+			temp /= 10;
+		}
+		
+		int missingZeros = length - count;
+		sb.append("0".repeat(Math.max(0, missingZeros)));
+		if(count != 0) sb.append(value);
+		return sb.toString();
 	}
 	
 	/**
@@ -236,18 +271,26 @@ public class GamePane extends AnchorPane{
 		int count = 0;
 		int limit = 0;
 		
+		// set all the bombs, only allowed to have 1000 failures creating bombs
 		while (count < bombs && limit < 1000) {
 			selected = getNode(row, col, grid);
 			if(selected.equals(t) || selected.isBomb()) {
 				row = ThreadLocalRandom.current().nextInt(height);
 				col = ThreadLocalRandom.current().nextInt(width);
+				limit++;
 			} else {
 				count++;
 				selected.setBomb(true);
 				selected.addImage(bomb);
 			}
-			limit++;
 		}
+		
+		if(limit >= 1000) {
+			System.out.println("Could not successfully build the board full of bombs");
+			endGame(getNode(0, 0, grid));
+		}
+		
+		// calculate the neighbors for each tile, set their text value, and move the HiddenBox to the front
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				selected = getNode(j, i, grid);
@@ -276,6 +319,50 @@ public class GamePane extends AnchorPane{
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * End-of-game logic. Set the game over to true to disable tile clicks. This method assumes a death/bomb was clicked.
+	 * Therefore, set the face to dead, make the clicked bomb turn red. Then expose the rest of the board, either showing
+	 * what is underneath the HiddenBox, or showing where a flag was incorrectly placed
+	 * @param source the Tile that caused game-over
+	 */
+	private void endGame(Object source){
+		gameOver = true;
+		face.setGraphic(dead);
+		
+		Tile t = (Tile) source;
+		StackPane sp = (StackPane) t.getChildren().get(t.getChildren().size() - 1);
+		t.getChildren().remove(sp);
+		t.getChildren().add(bombRed);
+		
+		Tile temp;
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				temp = getNode(i, j, grid);
+				if(!temp.equals(t)) {
+					if(temp.isFlagged()) {
+						if(!temp.isBomb()) {
+							wrongBomb(i, j);
+						}
+					} else if(temp.isHidden()) {
+						temp.getChildren().remove(temp.getChildren().size() - 1);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Place a new image at the top of the Tile that shows the wrong bomb image
+	 * @param row the row to place the image
+	 * @param col the column to place the image
+	 */
+	private void wrongBomb(int row, int col){
+		Tile t = getNode(row, col, grid);
+		t.getChildren().remove(t.getChildren().size() - 1);
+		t.getChildren().remove(t.getChildren().size() - 1);
+		t.getChildren().add(bombWrong);
 	}
 	
 	/**
@@ -314,7 +401,7 @@ public class GamePane extends AnchorPane{
 		t.setHidden(false);
 		revealed++;
 		//show the current tile
-		t.getChildren().remove(t.getChildren().size()-1);
+		t.getChildren().remove(t.getChildren().size() - 1);
 		
 		Tile temp;
 		//show adjacent neighbors if this tile = 0
@@ -328,7 +415,7 @@ public class GamePane extends AnchorPane{
 			}
 		}
 		
-		if(revealed == empties){
+		if(revealed == empties) {
 			gameWon();
 		}
 	}
@@ -378,55 +465,29 @@ public class GamePane extends AnchorPane{
 			t.setFlagged(true);
 			flagged++;
 		}
-		bombCount.setText("" + (bombs - flagged));
+		bombCount.setText(addPadding(bombs - flagged, 3));
 	}
 	
-	private void endGame(Object source){
-		gameOver = true;
-		face.setGraphic(dead);
-		
-		Tile t = (Tile) source;
-		StackPane sp = (StackPane) t.getChildren().get(t.getChildren().size() - 1);
-		t.getChildren().remove(sp);
-		t.getChildren().add(bombRed);
-		
-		Tile temp;
-		for(int i=0;i<width;i++){
-			for (int j=0;j<height;j++){
-				temp = getNode(i, j, grid);
-				if(temp.equals(t)){
-				
-				}else{
-					if(temp.isFlagged()){
-						if(!temp.isBomb()){
-							wrongBomb(i, j);
-						}
-					}else if(temp.isHidden()){
-						temp.getChildren().remove(temp.getChildren().size()-1);
-					}
-				}
-			}
-		}
-	}
-	
-	private void wrongBomb(int row, int col){
-		Tile t = getNode(row, col, grid);
-		t.getChildren().remove(t.getChildren().size()-1);
-		t.getChildren().remove(t.getChildren().size()-1);
-		t.getChildren().add(bombWrong);
-	}
-	
+	/**
+	 * End-game logic when the board has been beaten. Set game over to true to disable button clicks. Then set
+	 * the face to wear glasses, set the bombCount to 0, for all remaining un-clicked tiles, place a flag on
+	 * those tiles.
+	 */
 	private void gameWon(){
+		animationTimer.stop();
 		sessionWins++;
 		gameOver = true;
 		face.setGraphic(glasses);
-		bombCount.setText("0");
+		bombCount.setText(addPadding(0, 3));
 		
 		Tile t;
-		for(int i=0;i<width;i++){
-			for(int j=0;j<height;j++){
-				t = getNode(i,j,grid);
-				if(t.isHidden() && t.isBomb()){
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				t = getNode(i, j, grid);
+				if(t == null) {
+					System.out.println("Tried to get tile at x= " + i + " and y= " + j);
+				}
+				if(t != null && t.isHidden() && t.isBomb()) {
 					t.addImage(flag);
 				}
 			}
@@ -435,9 +496,5 @@ public class GamePane extends AnchorPane{
 	
 	public GridPane getGrid(){
 		return grid;
-	}
-	
-	public void setGrid(GridPane grid){
-		GamePane.grid = grid;
 	}
 }

@@ -67,7 +67,7 @@
          <right>
             <VBox prefHeight="200.0" prefWidth="300.0" spacing="25.0" BorderPane.alignment="CENTER">
                <children>
-                  <Label alignment="CENTER_RIGHT" text="Game Stats" textAlignment="RIGHT" translateX="85.0">
+                  <Label alignment="CENTER_RIGHT" text="Game Stats - Coming Soon" textAlignment="RIGHT" translateX="35.0">
                      <font>
                         <Font size="20.0" />
                      </font>
@@ -75,7 +75,7 @@
                         <Insets />
                      </VBox.margin>
                   </Label>
-                  <GridPane maxWidth="150.0" prefWidth="150.0" translateX="70.0">
+                  <GridPane disable="true" maxWidth="150.0" prefWidth="150.0" translateX="70.0">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" />
                       <ColumnConstraints hgrow="SOMETIMES" />
@@ -94,7 +94,7 @@
                         <Label fx:id="percentWon" text="\% Won" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                      </children>
                   </GridPane>
-                  <GridPane maxWidth="150.0" translateX="70.0">
+                  <GridPane disable="true" maxWidth="150.0" translateX="70.0">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
