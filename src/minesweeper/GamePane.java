@@ -84,7 +84,7 @@ public class GamePane extends AnchorPane{
 	 * Anonymous EventHandler that creates a new game, and sets it to the main scene of the stage. Perform these actions such that no new scenes or stages are created;
 	 */
 	EventHandler<ActionEvent> newGame = e -> {
-	
+		// test commit
 	};
 	
 	/**
