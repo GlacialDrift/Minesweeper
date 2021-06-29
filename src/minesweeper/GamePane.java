@@ -6,7 +6,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -16,7 +15,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.io.FileInputStream;
@@ -35,10 +33,10 @@ public class GamePane extends AnchorPane{
 	
 	private static GridPane grid;
 	private final int empties;
-	private final Label bombCount;
-	private final Label timer;
-	private final Button face;
-	private final long startTime;
+	private final Label bombCount = new Label("");
+	private final Label timer = new Label("");
+	private final Button face = new Button();
+	private long startTime;
 	private Font digital;
 	private Image bomb;
 	private ImageView bombRed;
@@ -67,6 +65,7 @@ public class GamePane extends AnchorPane{
 			if(!initialized) {
 				if(e.getButton() == MouseButton.PRIMARY) {
 					buildBoard(e.getSource());
+					startTime = System.currentTimeMillis();
 					animationTimer.start();
 					leftClick(e.getSource());
 				}
@@ -84,7 +83,27 @@ public class GamePane extends AnchorPane{
 	 * Anonymous EventHandler that creates a new game, and sets it to the main scene of the stage. Perform these actions such that no new scenes or stages are created;
 	 */
 	EventHandler<ActionEvent> newGame = e -> {
-		// test commit
+		animationTimer.stop();
+		initialized = false;
+		flagged = 0;
+		sessionPlays++;
+		revealed = 0;
+		gameOver = false;
+		bombCount.setText(addPadding(bombs, 3));
+		timer.setText(addPadding(0, 3));
+		grid.getChildren().clear();
+		face.setGraphic(smile);
+		
+		Tile t;
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				t = new Tile(i, j);
+				t.addEventFilter(MouseEvent.MOUSE_CLICKED, click);
+				t.addHiddenBox();
+				grid.add(t, i, j);
+			}
+		}
+		
 	};
 	
 	/**
@@ -127,11 +146,11 @@ public class GamePane extends AnchorPane{
 		grid = new GridPane();
 		BorderPane game = new BorderPane();
 		game.setBackground(new Background(new BackgroundFill(Color.LIGHTGREY, null, null)));
-		bombCount = new Label(addPadding(bombs, 3));
-		timer = new Label("000");
-		face = new Button();
+		bombCount.setText(addPadding(bombs, 3));
+		timer.setText(addPadding(0, 3));
 		face.setGraphic(smile);
 		face.setOnAction(newGame);
+		face.setBorder(null);
 		
 		// format the top bar
 		Background boxes = new Background(new BackgroundFill(Color.rgb(25, 25, 25), null, null));

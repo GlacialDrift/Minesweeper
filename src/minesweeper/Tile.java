@@ -24,6 +24,7 @@ public class Tile extends StackPane{
 	private final int xpos;
 	private final int ypos;
 	private final ArrayList<Pair<Integer, Integer>> neighbors;
+	private int size;
 	private boolean bomb;
 	private boolean hidden;
 	private boolean flagged;
@@ -35,11 +36,8 @@ public class Tile extends StackPane{
 	 * @param y y-position of the tile (index starts at 0)
 	 */
 	public Tile(int x, int y){
-		double size = 25;
-		Rectangle r = new Rectangle(size, size);
-		r.setFill(Color.web("C0C0C0"));
-		r.setStroke(Color.web("808080"));
-		this.getChildren().add(r);
+		size = 25;
+		addRectange();
 		bomb = false;
 		xpos = x;
 		ypos = y;
@@ -47,6 +45,13 @@ public class Tile extends StackPane{
 		flagged = false;
 		bombNeighbors = 0;
 		neighbors = new ArrayList<>();
+	}
+	
+	public void addRectange(){
+		Rectangle r = new Rectangle(size, size);
+		r.setFill(Color.web("C0C0C0"));
+		r.setStroke(Color.web("808080"));
+		this.getChildren().add(r);
 	}
 	
 	/**
@@ -194,5 +199,9 @@ public class Tile extends StackPane{
 	
 	public int getBombNeighbors(){
 		return bombNeighbors;
+	}
+	
+	public void setBombNeighbors(int bombNeighbors){
+		this.bombNeighbors = bombNeighbors;
 	}
 }
