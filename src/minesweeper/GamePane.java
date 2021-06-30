@@ -1,13 +1,16 @@
 package minesweeper;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -15,12 +18,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -163,7 +168,13 @@ public class GamePane extends AnchorPane{
 		bombCount.setBorder(new Border(new BorderStroke(Color.BLACK, null, null, null)));
 		HBox titleBar = new HBox(bombCount, createHSpacer(), face, createHSpacer(), timer);
 		titleBar.setAlignment(Pos.CENTER);
-		game.setTop(titleBar);
+		
+		Menu file = new Menu("File");
+		Menu edit = new Menu("Edit");
+		MenuBar mb = createMenus();
+		
+		VBox top = new VBox(mb, titleBar);
+		game.setTop(top);
 		
 		// create all of the tiles, add event filters, and add HiddenBoxes
 		Tile t;
@@ -177,6 +188,43 @@ public class GamePane extends AnchorPane{
 		grid.setAlignment(Pos.CENTER);
 		game.setCenter(grid);
 		this.getChildren().add(game);
+	}
+	
+	private MenuBar createMenus(){
+		MenuBar menuBar = new MenuBar();
+		
+		MenuItem clearBoard = new MenuItem("Reset");
+		clearBoard.setOnAction(newGame);
+		
+		MenuItem save = new MenuItem("Save Game Stats");
+		
+		MenuItem splash = new MenuItem("Return to Menu Screen");
+		splash.setOnAction(e -> {
+			try {
+				Parent startRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("StartScreen.fxml")));
+				Stage stage = (Stage) menuBar.getScene().getWindow();
+				Scene scene = menuBar.getScene();
+				scene.setRoot(startRoot);
+				stage.setScene(scene);
+				stage.sizeToScene();
+				stage.show();
+			} catch(IOException ioException) {
+				ioException.printStackTrace();
+			}
+		});
+		
+		MenuItem close = new MenuItem("Close");
+		close.setOnAction(e -> Platform.exit());
+		Menu file = new Menu("File", null, clearBoard, save, splash, close);
+		
+		/*MenuItem scale = new MenuItem("Change Scale");
+		MenuItem color = new MenuItem("Change Color");
+		Menu edit = new Menu("Edit");
+		edit.getItems().add(scale);
+		edit.getItems().add(color);*/
+		
+		menuBar.getMenus().add(file);
+		return menuBar;
 	}
 	
 	/**
@@ -338,6 +386,7 @@ public class GamePane extends AnchorPane{
 	 * @param source the Tile that caused game-over
 	 */
 	private void endGame(Object source){
+		animationTimer.stop();
 		gameOver = true;
 		face.setGraphic(dead);
 		
@@ -349,8 +398,8 @@ public class GamePane extends AnchorPane{
 		Tile temp;
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				temp = getNode(i, j, grid);
-				if(!temp.equals(t)) {
+				temp = getNode(j, i, grid);
+				if(temp != null && !temp.equals(t)) {
 					if(temp.isFlagged()) {
 						if(!temp.isBomb()) {
 							wrongBomb(i, j);

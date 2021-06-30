@@ -37,7 +37,7 @@ public class Main extends Application implements Serializable{
 		
 		/* TODO
 		    implement stat saving and loading for display on the start screen
-		    Add menu bar to the game board scene to allow to return to splash screen
+		    Implement game-save in MenuBar
 		    implement updates for total games played, number of games won, high scores, etc.
 		*/
 		

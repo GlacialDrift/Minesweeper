@@ -45,6 +45,7 @@ public class StartScreenController implements Initializable{
 		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		Scene scene = new Scene(game);
 		stage.setScene(scene);
+		stage.sizeToScene();
 		stage.show();
 	}
 	

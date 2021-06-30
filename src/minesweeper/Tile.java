@@ -37,8 +37,8 @@ public class Tile extends StackPane{
 	 */
 	public Tile(int x, int y){
 		size = 25;
-		addRectangle("808080", "808080", "C0C0C0", 0.08);
-		addRectangle("FFFFFF", "808080", "C0C0C0", 0.12);
+		addRectangle("C0C0C0", "707070");
+		addHiddenBox();
 		bomb = false;
 		xpos = x;
 		ypos = y;
@@ -48,20 +48,35 @@ public class Tile extends StackPane{
 		neighbors = new ArrayList<>();
 	}
 	
-	public void addRectangle(String color1, String color2, String color3, double scaling){
+	public void addRectangle(String color1, String color2){
 		StackPane backing = new StackPane();
+		
+		Rectangle r = new Rectangle(size, size);
+		r.setFill(Color.web(color1));
+		r.setStroke(Color.web(color2));
+		r.setStrokeWidth(1);
+		backing.getChildren().addAll(r);
+		this.getChildren().add(backing);
+	}
+	
+	/**
+	 * Create the artwork to act as a hidden box and add that to the tile StackPane
+	 */
+	public void addHiddenBox(){
+		StackPane hidden = new StackPane();
 		Polygon topTriangle = new Polygon(0, 0, 0, size, size, 0);
-		topTriangle.setFill(Color.web(color1));
+		topTriangle.setFill(Color.web("FFFFFF"));
 		Polygon bottomTriangle = new Polygon(size, 0, 0, size, size, size);
-		bottomTriangle.setFill(Color.web(color2));
-		double offset = scaling * size;
+		bottomTriangle.setFill(Color.web("808080"));
+		double offset = 0.12d * size;
 		double rSize = size - 2 * offset;
 		Rectangle r = new Rectangle(rSize, rSize);
-		r.setFill(Color.web(color3));
+		r.setFill(Color.web("C0C0C0"));
 		r.setX(offset);
 		r.setY(offset);
-		backing.getChildren().addAll(topTriangle, bottomTriangle, r);
-		this.getChildren().add(backing);
+		hidden.getChildren().addAll(topTriangle, bottomTriangle, r);
+		this.getChildren().add(hidden);
+		
 	}
 	
 	/**
@@ -152,25 +167,6 @@ public class Tile extends StackPane{
 		this.getChildren().add(label);
 	}
 	
-	/**
-	 * Create the artwork to act as a hidden box and add that to the tile StackPane
-	 */
-	/*public void addHiddenBox(){
-		StackPane hidden = new StackPane();
-		Polygon topTriangle = new Polygon(0, 0, 0, size, size, 0);
-		topTriangle.setFill(Color.web("FFFFFF"));
-		Polygon bottomTriangle = new Polygon(size, 0, 0, size, size, size);
-		bottomTriangle.setFill(Color.web("808080"));
-		double offset = 0.12d * size;
-		double rSize = size - 2 * offset;
-		Rectangle r = new Rectangle(rSize, rSize);
-		r.setFill(Color.web("C0C0C0"));
-		r.setX(offset);
-		r.setY(offset);
-		hidden.getChildren().addAll(topTriangle, bottomTriangle, r);
-		this.getChildren().add(hidden);
-		
-	}*/
 	@Override
 	public int hashCode(){
 		int result = xpos;
