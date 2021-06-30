@@ -8,7 +8,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -37,7 +39,6 @@ public class Main extends Application implements Serializable{
 		    implement stat saving and loading for display on the start screen
 		    Add menu bar to the game board scene to allow to return to splash screen
 		    implement updates for total games played, number of games won, high scores, etc.
-		    re-factor the new-game button to reset the current board rather than creating a new one
 		*/
 		
 		Parent startRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("StartScreen.fxml")));

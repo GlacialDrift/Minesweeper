@@ -37,7 +37,8 @@ public class Tile extends StackPane{
 	 */
 	public Tile(int x, int y){
 		size = 25;
-		addRectange();
+		addRectangle("808080", "808080", "C0C0C0", 0.08);
+		addRectangle("FFFFFF", "808080", "C0C0C0", 0.12);
 		bomb = false;
 		xpos = x;
 		ypos = y;
@@ -47,11 +48,20 @@ public class Tile extends StackPane{
 		neighbors = new ArrayList<>();
 	}
 	
-	public void addRectange(){
-		Rectangle r = new Rectangle(size, size);
-		r.setFill(Color.web("C0C0C0"));
-		r.setStroke(Color.web("808080"));
-		this.getChildren().add(r);
+	public void addRectangle(String color1, String color2, String color3, double scaling){
+		StackPane backing = new StackPane();
+		Polygon topTriangle = new Polygon(0, 0, 0, size, size, 0);
+		topTriangle.setFill(Color.web(color1));
+		Polygon bottomTriangle = new Polygon(size, 0, 0, size, size, size);
+		bottomTriangle.setFill(Color.web(color2));
+		double offset = scaling * size;
+		double rSize = size - 2 * offset;
+		Rectangle r = new Rectangle(rSize, rSize);
+		r.setFill(Color.web(color3));
+		r.setX(offset);
+		r.setY(offset);
+		backing.getChildren().addAll(topTriangle, bottomTriangle, r);
+		this.getChildren().add(backing);
 	}
 	
 	/**
@@ -138,27 +148,29 @@ public class Tile extends StackPane{
 				label.setText("");
 			}
 		}
+		//label.setBackground(new Background(new BackgroundFill(null, null, null)));
 		this.getChildren().add(label);
 	}
 	
 	/**
 	 * Create the artwork to act as a hidden box and add that to the tile StackPane
 	 */
-	public void addHiddenBox(){
+	/*public void addHiddenBox(){
 		StackPane hidden = new StackPane();
-		Polygon topTriangle = new Polygon(0, 0, 0, 25, 25, 0);
+		Polygon topTriangle = new Polygon(0, 0, 0, size, size, 0);
 		topTriangle.setFill(Color.web("FFFFFF"));
-		Polygon bottomTriangle = new Polygon(25, 0, 0, 25, 25, 25);
+		Polygon bottomTriangle = new Polygon(size, 0, 0, size, size, size);
 		bottomTriangle.setFill(Color.web("808080"));
-		Rectangle r = new Rectangle(21, 21);
+		double offset = 0.12d * size;
+		double rSize = size - 2 * offset;
+		Rectangle r = new Rectangle(rSize, rSize);
 		r.setFill(Color.web("C0C0C0"));
-		r.setX(2);
-		r.setY(2);
+		r.setX(offset);
+		r.setY(offset);
 		hidden.getChildren().addAll(topTriangle, bottomTriangle, r);
 		this.getChildren().add(hidden);
 		
-	}
-	
+	}*/
 	@Override
 	public int hashCode(){
 		int result = xpos;
@@ -175,6 +187,14 @@ public class Tile extends StackPane{
 		
 		if(xpos != tile.xpos) return false;
 		return ypos == tile.ypos;
+	}
+	
+	public int getSize(){
+		return size;
+	}
+	
+	public void setSize(int size){
+		this.size = size;
 	}
 	
 	public ArrayList<Pair<Integer, Integer>> getNeighbors(){
@@ -199,9 +219,5 @@ public class Tile extends StackPane{
 	
 	public int getBombNeighbors(){
 		return bombNeighbors;
-	}
-	
-	public void setBombNeighbors(int bombNeighbors){
-		this.bombNeighbors = bombNeighbors;
 	}
 }

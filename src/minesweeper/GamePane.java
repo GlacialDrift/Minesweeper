@@ -89,8 +89,8 @@ public class GamePane extends AnchorPane{
 		sessionPlays++;
 		revealed = 0;
 		gameOver = false;
-		bombCount.setText(addPadding(bombs, 3));
-		timer.setText(addPadding(0, 3));
+		bombCount.setText(addPadding(bombs));
+		timer.setText(addPadding(0));
 		grid.getChildren().clear();
 		face.setGraphic(smile);
 		
@@ -99,7 +99,6 @@ public class GamePane extends AnchorPane{
 			for(int j = 0; j < height; j++) {
 				t = new Tile(i, j);
 				t.addEventFilter(MouseEvent.MOUSE_CLICKED, click);
-				t.addHiddenBox();
 				grid.add(t, i, j);
 			}
 		}
@@ -137,7 +136,7 @@ public class GamePane extends AnchorPane{
 				long elapsed = System.currentTimeMillis() - startTime;
 				elapsed /= 1000;
 				if(elapsed > 999) elapsed = 999;
-				timer.setText(addPadding((int) elapsed, 3));
+				timer.setText(addPadding((int) elapsed));
 			}
 		};
 		gameOver = false;
@@ -146,8 +145,8 @@ public class GamePane extends AnchorPane{
 		grid = new GridPane();
 		BorderPane game = new BorderPane();
 		game.setBackground(new Background(new BackgroundFill(Color.LIGHTGREY, null, null)));
-		bombCount.setText(addPadding(bombs, 3));
-		timer.setText(addPadding(0, 3));
+		bombCount.setText(addPadding(bombs));
+		timer.setText(addPadding(0));
 		face.setGraphic(smile);
 		face.setOnAction(newGame);
 		face.setBorder(null);
@@ -172,7 +171,6 @@ public class GamePane extends AnchorPane{
 			for(int j = 0; j < height; j++) {
 				t = new Tile(i, j);
 				t.addEventFilter(MouseEvent.MOUSE_CLICKED, click);
-				t.addHiddenBox();
 				grid.add(t, i, j);
 			}
 		}
@@ -246,11 +244,10 @@ public class GamePane extends AnchorPane{
 	
 	/**
 	 * Small helper method to ensure the bomb counter and timer at the top of the screen are always 3 digits long
-	 * @param value  the value to be displayed
-	 * @param length the desired number of digits
+	 * @param value the value to be displayed
 	 * @return return a string of the desired value and the desired digits
 	 */
-	private String addPadding(int value, int length){
+	private String addPadding(int value){
 		StringBuilder sb = new StringBuilder();
 		
 		int temp = value;
@@ -260,7 +257,7 @@ public class GamePane extends AnchorPane{
 			temp /= 10;
 		}
 		
-		int missingZeros = length - count;
+		int missingZeros = 3 - count;
 		sb.append("0".repeat(Math.max(0, missingZeros)));
 		if(count != 0) sb.append(value);
 		return sb.toString();
@@ -478,7 +475,7 @@ public class GamePane extends AnchorPane{
 			t.setFlagged(true);
 			flagged++;
 		}
-		bombCount.setText(addPadding(bombs - flagged, 3));
+		bombCount.setText(addPadding(bombs - flagged));
 	}
 	
 	/**
@@ -491,7 +488,7 @@ public class GamePane extends AnchorPane{
 		sessionWins++;
 		gameOver = true;
 		face.setGraphic(glasses);
-		bombCount.setText(addPadding(0, 3));
+		bombCount.setText(addPadding(0));
 		
 		Tile t;
 		for(int i = 0; i < width; i++) {
